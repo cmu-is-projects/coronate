@@ -86,19 +86,33 @@ module GistOpts = {
     )
   }
 
-  @val external github_app_id: string = "process.env.GITHUB_APP_ID"
-  @val external netlify_id: option<string> = "process.env.NETLIFY_ID"
-
-  let netlifyopts = switch netlify_id {
-  | Some(site_id) => {"site_id": site_id}
-  | None => Js.Obj.empty()
-  }
+let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
 
   let savedAlert = () => Webapi.Dom.Window.alert(Webapi.Dom.window, "Data saved.")
 
   @react.component
   let make = (~exportData, ~configDispatch: Db.actionConfig => unit, ~loadJson) => {
     let (auth, authDispatch) = Db.useAuth()
+
+    React.useEffect0(() => {
+      let search = Webapi.Dom.window->Webapi.Dom.Window.location->Webapi.Dom.Location.search
+      Js.log(search)
+      Js.log("🔍 URL Search Params: " ++ search)
+      if Js.String.includes(search, "token=") {
+        Js.log("String includes token!")
+        let token = Js.String.split(search, "=")->Belt.Array.get(1)->Belt.Option.getWithDefault("")
+        Js.log("✅ Extracted GitHub Token: " ++ token)
+        if token != "" {
+          authDispatch(SetGitHubToken(token))
+          Js.log("📦 Dispatched token to auth store")
+          // Clean up the URL
+          let history = Webapi.Dom.window->Webapi.Dom.Window.history
+          history->Webapi.Dom.History.replaceState(%raw("null"), "", "/")
+        }
+      }
+      None
+    })
+
     let minify = Hooks.useBool(true)
     let (gists, setGists) = React.useState(() => [])
     let cancelAllEffects = ref(false)
@@ -152,21 +166,13 @@ module GistOpts = {
         {switch auth.github_token {
         | "" =>
           <button
-            onClick={e => {
-              ReactEvent.Mouse.preventDefault(e)
-              NetlifyAuth.make(netlifyopts)->NetlifyAuth.authenticate(
-                {"provider": #github, "scope": "gist"},
-                (err, data) =>
-                  switch (Js.Nullable.toOption(err), data) {
-                  | (_, Some({token})) =>
-                    if !cancelAllEffects.contents {
-                      authDispatch(SetGitHubToken(token))
-                    }
-                  | (Some(err), _) => Js.Console.error(err)
-                  | (None, None) => Js.Console.error("Something wrong happened.")
-                  },
+            onClick={_ =>
+              Webapi.Dom.window
+              ->Webapi.Dom.Window.location
+              ->Webapi.Dom.Location.setHref(
+                "https://github.com/login/oauth/authorize?client_id=" ++ github_app_id ++ "&scope=gist&allow_signup=false&prompt=consent"
               )
-            }}>
+            }>
             {"Log in with GitHub"->React.string}
           </button>
         | _ =>
