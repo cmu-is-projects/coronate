@@ -964,7 +964,7 @@ li.player.missing {
 
 .pagescores__row:nth-of-type(odd) {
   background-color: var(--grey-20);
-} */
+} 
 
 .pagescores__row-td {
   border-width: 1px;
