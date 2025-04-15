@@ -96,20 +96,29 @@ let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
 
     React.useEffect0(() => {
       let search = Webapi.Dom.window->Webapi.Dom.Window.location->Webapi.Dom.Location.search
-      Js.log(search)
-      Js.log("🔍 URL Search Params: " ++ search)
-      if Js.String.includes(search, "token=") {
-        Js.log("String includes token!")
-        let token = Js.String.split(search, "=")->Belt.Array.get(1)->Belt.Option.getWithDefault("")
-        Js.log("✅ Extracted GitHub Token: " ++ token)
-        if token != "" {
-          authDispatch(SetGitHubToken(token))
-          Js.log("📦 Dispatched token to auth store")
-          // Clean up the URL
-          let history = Webapi.Dom.window->Webapi.Dom.Window.history
-          history->Webapi.Dom.History.replaceState(%raw("null"), "", "/")
-        }
+      Js.log("Raw search string: " ++ search)
+      
+      // Use URLSearchParams through raw JS to extract the token
+      let token = %raw(`function() {
+        const params = new URLSearchParams(search);
+        return params.get("token") || "";
+      }()`)
+      
+      Js.log("Token from URLSearchParams: " ++ token)
+      
+      if token != "" {
+        Js.log("✅ Found valid token: " ++ token)
+        authDispatch(SetGitHubToken(token))
+        LocalForage.Record.set(Db.authDb, ~items={...Data.Auth.default, github_token: token})->ignore
+        Js.log("📦 Dispatched token to auth store")
+        
+        // Clean up URL using existing Webapi bindings
+        let history = Webapi.Dom.window->Webapi.Dom.Window.history
+        history->Webapi.Dom.History.replaceState(%raw("null"), "", "/options")
+      } else {
+        Js.log("No valid token found")
       }
+      
       None
     })
 
@@ -125,12 +134,14 @@ let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
       Promise.resolve()
     }
 
-    let loadGistList = (auth: Data.Auth.t) =>
+    let loadGistList = (auth: Data.Auth.t) => {
+      Js.log("🌀 Loading gists with token: " ++ auth.github_token)
       switch auth.github_token {
       | "" => Promise.resolve(setGists(_ => []))
       | token =>
         Octokit.Gist.list(~token)
         ->Promise.thenResolve((data: array<Octokit.Gist.file>) => {
+          Js.log2("📃 Gists fetched:", data)
           if !cancelAllEffects.contents {
             setGists(_ => data)
             if !Array.some(data, x => x.id == auth.github_gist_id) {
@@ -140,11 +151,19 @@ let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
         })
         ->Promise.catch(handleAuthError)
       }
+    }
+
 
     React.useEffect1(() => {
-      loadGistList(auth)->ignore
+      if auth.github_token != "" {
+        Js.log("✅ Token detected in state, loading gists...")
+        loadGistList(auth)->ignore
+      } else {
+        Js.log("⚠️ No token in state yet, skipping gist load")
+      }
       Some(() => cancelAllEffects := true)
     }, [auth.github_token])
+
 
     <div>
       <h3> {"Backup to GitHub"->React.string} </h3>
@@ -200,7 +219,7 @@ let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
                 }
                 savedAlert()
               })
-              ->Promise.then(() => loadGistList(auth))
+              ->Promise.then(_ => loadGistList(auth))
               ->Promise.catch(e => {
                 Webapi.Dom.Window.alert(
                   Webapi.Dom.window,

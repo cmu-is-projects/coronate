@@ -7,6 +7,8 @@
 */
 open Belt
 
+
+
 let localForageConfig = LocalForage.Config.make(~name="Coronate")
 module Config = LocalForage.Id.MakeEncodable(Data.Config)
 module Player = LocalForage.Id.MakeEncodable(Data.Player)
