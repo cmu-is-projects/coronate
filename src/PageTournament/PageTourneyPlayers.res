@@ -56,12 +56,12 @@ module Selecting = {
           <tr>
             <th>
               <Hooks.SortButton sortColumn=sortFirstName data=table dispatch=tableDispatch>
-                {React.string("First name")}
+                {React.string("Name")}
               </Hooks.SortButton>
             </th>
             <th>
               <Hooks.SortButton sortColumn=sortLastName data=table dispatch=tableDispatch>
-                {React.string("Last name")}
+                {React.string("Partner Site")}
               </Hooks.SortButton>
             </th>
             <th> {React.string("Select")} </th>
@@ -395,12 +395,12 @@ let make = (~tournament: LoadTournament.t) => {
             <tr>
               <th>
                 <Hooks.SortButton sortColumn=sortFirstName data=playerTable dispatch=tableDispatch>
-                  {React.string("First name")}
+                  {React.string("Name")}
                 </Hooks.SortButton>
               </th>
               <th>
                 <Hooks.SortButton sortColumn=sortLastName data=playerTable dispatch=tableDispatch>
-                  {React.string("Last name")}
+                  {React.string("Partner Site")}
                 </Hooks.SortButton>
               </th>
               <th> {React.string("Options")} </th>
