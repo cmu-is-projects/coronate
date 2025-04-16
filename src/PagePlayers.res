@@ -406,11 +406,14 @@ module PlayerList = {
           {Array.mapWithIndex(sorted.table, (index, p) =>
             <tr key={p.id->Data.Id.toString}>
               <td className="table__number"> {(index + 1)->React.int} </td> /* Ranks players */
-              <td className="table__player" colSpan=2>
-                <Link to_=Player(p.id)> {p->Player.fullName->React.string} </Link>
+              <td className="table__name">
+                <Link to_=Player(p.id)> {p.firstName->React.string} </Link>
               </td>
-              <td className="table__number"> {p.rating->React.int} </td>
-              <td className="table__number"> {p.matchCount->Player.NatInt.toInt->React.int} </td>
+              <td className="table__partner">
+                {p.lastName->React.string} /* remember this means Partner Site for now */
+              </td>
+              <td className="table__rating"> {p.rating->React.int} </td>
+              <td className="table__matches"> {p.matchCount->Player.NatInt.toInt->React.int} </td>
               <td>
                 <button className="danger button-ghost" onClick={event => delPlayer(event, p.id)}>
                   <Icons.Trash />
