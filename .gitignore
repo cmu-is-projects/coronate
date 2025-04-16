@@ -38,4 +38,4 @@ _esy/
 *.swp
 
 # Local Netlify folder
-.netlify
+.netlify.env.flask

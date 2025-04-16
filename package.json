@@ -19,9 +19,9 @@
     "email": "jbpjackson+coronate@icloud.com"
   },
   "scripts": {
-    "prebuild": "rescript",
+    "prebuild": "node scripts/use-react-env.js && rescript",
     "build": "node scripts/build.js",
-    "prestart": "rescript",
+    "prestart": "node scripts/use-react-env.js && rescript",
     "start": "node scripts/start.js",
     "pretest": "rescript",
     "test": "node scripts/test.js --watchAll=false",

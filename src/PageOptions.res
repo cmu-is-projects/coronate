@@ -96,7 +96,7 @@ let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
 
     React.useEffect0(() => {
       let search = Webapi.Dom.window->Webapi.Dom.Window.location->Webapi.Dom.Location.search
-      Js.log("Raw search string: " ++ search)
+      
       
       // Use URLSearchParams through raw JS to extract the token
       let token = %raw(`function() {
@@ -104,10 +104,8 @@ let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
         return params.get("token") || "";
       }()`)
       
-      Js.log("Token from URLSearchParams: " ++ token)
       
       if token != "" {
-        Js.log("✅ Found valid token: " ++ token)
         authDispatch(SetGitHubToken(token))
         LocalForage.Record.set(Db.authDb, ~items={...Data.Auth.default, github_token: token})->ignore
         Js.log("📦 Dispatched token to auth store")
