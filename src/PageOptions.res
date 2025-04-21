@@ -86,19 +86,40 @@ module GistOpts = {
     )
   }
 
-  @val external github_app_id: string = "process.env.GITHUB_APP_ID"
-  @val external netlify_id: option<string> = "process.env.NETLIFY_ID"
-
-  let netlifyopts = switch netlify_id {
-  | Some(site_id) => {"site_id": site_id}
-  | None => Js.Obj.empty()
-  }
+let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
 
   let savedAlert = () => Webapi.Dom.Window.alert(Webapi.Dom.window, "Data saved.")
 
   @react.component
   let make = (~exportData, ~configDispatch: Db.actionConfig => unit, ~loadJson) => {
     let (auth, authDispatch) = Db.useAuth()
+
+    React.useEffect0(() => {
+      let search = Webapi.Dom.window->Webapi.Dom.Window.location->Webapi.Dom.Location.search
+      
+      
+      // Use URLSearchParams through raw JS to extract the token
+      let token = %raw(`function() {
+        const params = new URLSearchParams(search);
+        return params.get("token") || "";
+      }()`)
+      
+      
+      if token != "" {
+        authDispatch(SetGitHubToken(token))
+        LocalForage.Record.set(Db.authDb, ~items={...Data.Auth.default, github_token: token})->ignore
+        Js.log("📦 Dispatched token to auth store")
+        
+        // Clean up URL using existing Webapi bindings
+        let history = Webapi.Dom.window->Webapi.Dom.Window.history
+        history->Webapi.Dom.History.replaceState(%raw("null"), "", "/options")
+      } else {
+        Js.log("No valid token found")
+      }
+      
+      None
+    })
+
     let minify = Hooks.useBool(true)
     let (gists, setGists) = React.useState(() => [])
     let cancelAllEffects = ref(false)
@@ -111,12 +132,14 @@ module GistOpts = {
       Promise.resolve()
     }
 
-    let loadGistList = (auth: Data.Auth.t) =>
+    let loadGistList = (auth: Data.Auth.t) => {
+      Js.log("🌀 Loading gists with token: " ++ auth.github_token)
       switch auth.github_token {
       | "" => Promise.resolve(setGists(_ => []))
       | token =>
         Octokit.Gist.list(~token)
         ->Promise.thenResolve((data: array<Octokit.Gist.file>) => {
+          Js.log2("📃 Gists fetched:", data)
           if !cancelAllEffects.contents {
             setGists(_ => data)
             if !Array.some(data, x => x.id == auth.github_gist_id) {
@@ -126,11 +149,19 @@ module GistOpts = {
         })
         ->Promise.catch(handleAuthError)
       }
+    }
+
 
     React.useEffect1(() => {
-      loadGistList(auth)->ignore
+      if auth.github_token != "" {
+        Js.log("✅ Token detected in state, loading gists...")
+        loadGistList(auth)->ignore
+      } else {
+        Js.log("⚠️ No token in state yet, skipping gist load")
+      }
       Some(() => cancelAllEffects := true)
     }, [auth.github_token])
+
 
     <div>
       <h3> {"Backup to GitHub"->React.string} </h3>
@@ -152,21 +183,13 @@ module GistOpts = {
         {switch auth.github_token {
         | "" =>
           <button
-            onClick={e => {
-              ReactEvent.Mouse.preventDefault(e)
-              NetlifyAuth.make(netlifyopts)->NetlifyAuth.authenticate(
-                {"provider": #github, "scope": "gist"},
-                (err, data) =>
-                  switch (Js.Nullable.toOption(err), data) {
-                  | (_, Some({token})) =>
-                    if !cancelAllEffects.contents {
-                      authDispatch(SetGitHubToken(token))
-                    }
-                  | (Some(err), _) => Js.Console.error(err)
-                  | (None, None) => Js.Console.error("Something wrong happened.")
-                  },
+            onClick={_ =>
+              Webapi.Dom.window
+              ->Webapi.Dom.Window.location
+              ->Webapi.Dom.Location.setHref(
+                "https://github.com/login/oauth/authorize?client_id=" ++ github_app_id ++ "&scope=gist&allow_signup=false&prompt=consent"
               )
-            }}>
+            }>
             {"Log in with GitHub"->React.string}
           </button>
         | _ =>
@@ -194,7 +217,7 @@ module GistOpts = {
                 }
                 savedAlert()
               })
-              ->Promise.then(() => loadGistList(auth))
+              ->Promise.then(_ => loadGistList(auth))
               ->Promise.catch(e => {
                 Webapi.Dom.Window.alert(
                   Webapi.Dom.window,

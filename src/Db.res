@@ -241,3 +241,5 @@ let useAuth = () => {
   }, (auth, loaded.state))
   (auth, dispatch)
 }
+
+let authDb = authDb

@@ -1,6 +1,7 @@
 {
   "name": "coronate",
   "description": "A free, easy-to-use Swiss chess tournament manager.",
+  "proxy": "http://127.0.0.1:5000",
   "author": {
     "name": "John Jackson",
     "email": "jbpjackson+coronate@icloud.com",
@@ -18,9 +19,9 @@
     "email": "jbpjackson+coronate@icloud.com"
   },
   "scripts": {
-    "prebuild": "rescript",
+    "prebuild": "node scripts/use-react-env.js && rescript",
     "build": "node scripts/build.js",
-    "prestart": "rescript",
+    "prestart": "node scripts/use-react-env.js && rescript",
     "start": "node scripts/start.js",
     "pretest": "rescript",
     "test": "node scripts/test.js --watchAll=false",
@@ -32,6 +33,7 @@
     "format": "rescript format -all"
   },
   "dependencies": {
+    "@glennsl/rescript-fetch": "^0.2.3",
     "@octokit/core": "^3.4.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.0-rc.0",
     "@reach/dialog": "^0.11.2",
@@ -42,6 +44,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^11.2.7",
     "bfj": "^7.0.2",
+    "bs-fetch": "^0.6.2",
     "case-sensitive-paths-webpack-plugin": "^2.4.0",
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^3.4.1",
@@ -62,7 +65,7 @@
     "localforage-removeitems": "^1.4.0",
     "localforage-setitems": "^1.4.0",
     "mini-css-extract-plugin": "^2.6.0",
-    "nanoid": "^3.1.31",
+    "nanoid": "^3.3.11",
     "netlify-auth-providers": "^1.0.0-alpha5",
     "numeral": "^2.0.6",
     "photon-colors": "^3.3.2",

@@ -13,6 +13,9 @@ module Tournament: module type of LocalForage.Id.MakeEncodable(Coronate.Data.Tou
 
 module Player: module type of LocalForage.Id.MakeEncodable(Coronate.Data.Player)
 
+module Auth: module type of LocalForage.Id.MakeEncodable(Coronate.Data.Auth)
+
+
 let tournaments: LocalForage.Map.t<Data.Tournament.t, Tournament.identity>
 
 type action<'a> =
@@ -51,3 +54,6 @@ type actionAuth =
   | Reset
 
 let useAuth: unit => (Data.Auth.t, actionAuth => unit)
+let authDb: LocalForage.Record.t<Data.Auth.t, Auth.identity>
+
+

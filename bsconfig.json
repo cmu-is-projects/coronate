@@ -14,7 +14,8 @@
     "@rescript/react",
     "re-classnames",
     "rescript-webapi",
-    "rescript-blossom"
+    "rescript-blossom",
+    "bs-fetch"
   ],
   "warnings": {
     "number": "+A-48-42",
