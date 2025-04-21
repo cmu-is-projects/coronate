@@ -37,12 +37,12 @@ module Form = {
   module Validate = {
     let firstName = firstName =>
       switch firstName {
-      | "" => Error("First name is required")
+      | "" => Error("Name is required")
       | name => Ok(name)
       }
     let lastName = lastName =>
       switch lastName {
-      | "" => Error("Last name is required")
+      | "" => Error("Partner Site is required")
       | name => Ok(name)
       }
     let rating = rating =>
@@ -291,7 +291,7 @@ module NewPlayerForm = {
       <fieldset>
         <legend> {React.string("Register a new player")} </legend>
         <p>
-          <label htmlFor="firstName"> {React.string("First name")} </label>
+          <label htmlFor="firstName"> {React.string("Name")} </label>
           <input
             name="firstName"
             type_="text"
@@ -303,7 +303,7 @@ module NewPlayerForm = {
         </p>
         {errorNotification(Form.firstNameResult(form))}
         <p>
-          <label htmlFor="lastName"> {React.string("Last name")} </label>
+          <label htmlFor="lastName"> {React.string("Partner Site")} </label>
           <input
             name="lastName"
             type_="text"
@@ -379,12 +379,12 @@ module PlayerList = {
             <th> {React.string("#")} </th> /* New Ranking Column */
             <th>
               <Hooks.SortButton data=sorted dispatch=sortDispatch sortColumn=sortFirstName>
-                {React.string("First name")}
+                {React.string("Name")}
               </Hooks.SortButton>
             </th>
             <th>
               <Hooks.SortButton data=sorted dispatch=sortDispatch sortColumn=sortLastName>
-                {React.string("Last name")}
+                {React.string("Partner Site")}
               </Hooks.SortButton>
             </th>
             <th>
@@ -406,11 +406,14 @@ module PlayerList = {
           {Array.mapWithIndex(sorted.table, (index, p) =>
             <tr key={p.id->Data.Id.toString}>
               <td className="table__number"> {(index + 1)->React.int} </td> /* Ranks players */
-              <td className="table__player" colSpan=2>
-                <Link to_=Player(p.id)> {p->Player.fullName->React.string} </Link>
+              <td className="table__name">
+                <Link to_=Player(p.id)> {p.firstName->React.string} </Link>
               </td>
-              <td className="table__number"> {p.rating->React.int} </td>
-              <td className="table__number"> {p.matchCount->Player.NatInt.toInt->React.int} </td>
+              <td className="table__partner">
+                {p.lastName->React.string} /* remember this means Partner Site for now */
+              </td>
+              <td className="table__rating"> {p.rating->React.int} </td>
+              <td className="table__matches"> {p.matchCount->Player.NatInt.toInt->React.int} </td>
               <td>
                 <button className="danger button-ghost" onClick={event => delPlayer(event, p.id)}>
                   <Icons.Trash />
@@ -659,7 +662,7 @@ module Profile = {
           )
         }}>
         <p>
-          <label htmlFor="firstName"> {React.string("First name")} </label>
+          <label htmlFor="firstName"> {React.string("Name")} </label>
           <input
             value=input.firstName
             onBlur={_ => Form.blurFirstName(form)}
@@ -670,7 +673,7 @@ module Profile = {
         </p>
         {errorNotification(Form.firstNameResult(form))}
         <p>
-          <label htmlFor="lastName"> {React.string("Last name")} </label>
+          <label htmlFor="lastName"> {React.string("Partner Site")} </label>
           <input
             value=input.lastName
             onBlur={_ => Form.blurLastName(form)}

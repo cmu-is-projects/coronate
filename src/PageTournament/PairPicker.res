@@ -169,12 +169,12 @@ module SelectList = {
             </th>
             <th>
               <Hooks.SortButton sortColumn=sortByFirstName data=sorted dispatch=sortedDispatch>
-                {React.string("First name")}
+                {React.string("Name")}
               </Hooks.SortButton>
             </th>
             <th>
               <Hooks.SortButton sortColumn=sortByLastName data=sorted dispatch=sortedDispatch>
-                {React.string("Last name")}
+                {React.string("Partner Site")}
               </Hooks.SortButton>
             </th>
             <th>
