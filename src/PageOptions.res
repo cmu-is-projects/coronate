@@ -133,7 +133,6 @@ let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
     }
 
     let loadGistList = (auth: Data.Auth.t) => {
-      Js.log("🌀 Loading gists with token: " ++ auth.github_token)
       switch auth.github_token {
       | "" => Promise.resolve(setGists(_ => []))
       | token =>
@@ -154,10 +153,9 @@ let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
 
     React.useEffect1(() => {
       if auth.github_token != "" {
-        Js.log("✅ Token detected in state, loading gists...")
         loadGistList(auth)->ignore
       } else {
-        Js.log("⚠️ No token in state yet, skipping gist load")
+        Js.log("No token in state yet, skipping gist load")
       }
       Some(() => cancelAllEffects := true)
     }, [auth.github_token])
