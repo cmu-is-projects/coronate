@@ -96,6 +96,7 @@ let github_app_id = %raw("process.env.REACT_APP_GITHUB_CLIENT_ID")
 
     React.useEffect0(() => {
       let search = Webapi.Dom.window->Webapi.Dom.Window.location->Webapi.Dom.Location.search
+      Js.log("Raw search string: " ++ search)
       
       
       // Use URLSearchParams through raw JS to extract the token
