@@ -154,8 +154,8 @@ def get_complete_data():
 
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
-@app.route("/oauth/callback")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://rook-cmuis.net")
+@app.route("/callback")
 def github_oauth_callback():
     code = request.args.get("code")
     print(f"Received code: {code}")
@@ -177,8 +177,6 @@ def github_oauth_callback():
     # Redirect back to frontend with token in query string
     return redirect(f"{FRONTEND_URL}/options?token={access_token}")
     # return redirect(f"http://localhost:3000/options?token={access_token}")
-
-
 
 
 if __name__ == '__main__':
