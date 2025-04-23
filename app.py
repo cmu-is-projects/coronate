@@ -5,7 +5,7 @@ import requests
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
-load_dotenv(dotenv_path=".env.flask")
+load_dotenv(dotenv_path="/home/jorge/secrets/env.flask")
 
 
 app = Flask(__name__)
