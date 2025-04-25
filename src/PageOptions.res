@@ -9,6 +9,7 @@ open Belt
 open Data
 
 @val external node_env: string = "process.env.NODE_ENV"
+@val external leaderboardApi: string = "process.env.REACT_APP_LEADERBOARD_API_URL"
 
 let getDateForFile = () => {
   let date = Js.Date.make()
@@ -407,6 +408,10 @@ let make = (~windowDispatch=_ => ()) => {
     let newText = ReactEvent.Form.currentTarget(event)["value"]
     setText(_ => newText)
   }
+
+  let (leaderboardToken, setLeaderboardToken) = React.useState(() => "")
+  let (leaderboardSite, setLeaderboardSite) = React.useState(() => "")
+
   <Window.Body windowDispatch>
     <div className="content-area">
       <h2> {React.string("Bye settings")} </h2>
@@ -488,6 +493,118 @@ let make = (~windowDispatch=_ => ()) => {
           />
         </label>
       </form>
+
+      
+     <br/>
+      <h2> {React.string("Add Site to Leaderboard")} </h2>
+      
+      <p className="caption-30">
+        {"You can add your class room to "->React.string}
+        <a
+          href="https://queens-gambit-leaderboards.onrender.com/"
+          target="_blank"
+          rel="noopener noreferrer">
+          {"Queens Gambit's Leaderboard page "->React.string}
+          <Icons.ExternalLink />
+        </a>
+        {`. To do so, we need your personal github token (classic) which can be found on `->React.string}
+        <a
+          href="https://github.com/settings/developers"
+          target="_blank"
+          rel="noopener noreferrer">
+          {"Github's developer settings "->React.string}
+          <Icons.ExternalLink />
+        </a>
+        {". For intructions on how to set it all up correctly, go to our "->React.string}
+        <a
+          href="https://docs.google.com/document/d/13WnQg_4oyGIgraRi00ElAeiMYCXFiPLugHQiPmevoqA/edit?usp=sharing"
+          target="_blank"
+          rel="noopener noreferrer">
+          {"Queens Gambit documentation "->React.string}
+          <Icons.ExternalLink />
+        </a>
+      </p>
+
+
+      <form
+        onSubmit={e => {
+          ReactEvent.Form.preventDefault(e)
+
+          // Explicitly get fresh values from the DOM
+          let tokenInput = leaderboardToken
+          let siteInput = leaderboardSite
+
+
+          let payload = Js.Dict.empty()
+          Js.Dict.set(payload, "github_token", Js.Json.string(tokenInput))
+          Js.Dict.set(payload, "site_name", Js.Json.string(siteInput))
+
+
+          Fetch.fetchWithInit(
+            leaderboardApi,
+            Fetch.RequestInit.make(
+              ~method_=Fetch.Post,
+              ~headers=Fetch.HeadersInit.make({"Content-Type": "application/json"}),
+              ~body=Fetch.BodyInit.make(Js.Json.stringify(Js.Json.object_(payload))),
+              ()
+            )
+          )
+          ->Promise.then(_ => {
+            Js.log("✅ Server responded with success.")
+            Webapi.Dom.Window.alert(Webapi.Dom.window, "✔️ Token submitted successfully!")
+            
+            setLeaderboardToken(_ => "")
+            setLeaderboardSite(_ => "")
+
+            Promise.resolve()
+          })
+          ->Promise.catch(_ => {
+            Js.log("❌ Server returned an error or network issue.")
+            Webapi.Dom.Window.alert(Webapi.Dom.window, "❌ Failed to submit token.")
+            Promise.resolve()
+          })
+          ->ignore
+        }}
+      >
+
+        <div style=ReactDOM.Style.make(~marginBottom="10px", ())>
+          <label>
+            {React.string("GitHub Personal Token: ")}
+            <input
+              type_="text"
+              value=leaderboardToken
+              onChange={e => {
+          let target = ReactEvent.Form.target(e)
+          let tokenVal = target["value"]
+          setLeaderboardToken(_ => tokenVal)
+        }
+              }
+            />
+          </label>
+        </div>
+
+        <div style=ReactDOM.Style.make(~marginBottom="10px", ())>
+          <label>
+            {React.string("Site Name: ")}
+            <input
+              type_="text"
+              value=leaderboardSite
+              onChange={e => {
+          let target = ReactEvent.Form.target(e)
+          let siteVal = target["value"]
+          setLeaderboardSite(_ => siteVal)
+        }
+              }
+            />
+          </label>
+        </div>
+
+        <button type_="submit">
+          {React.string("Submit to Leaderboard")}
+        </button>
+      </form>
+      <br/>
+
       <h2> {React.string("Manage data")} </h2>
       <p className="caption-20">
         {React.string("Last export: ")}
