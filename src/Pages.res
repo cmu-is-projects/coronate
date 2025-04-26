@@ -10,50 +10,6 @@ open Belt
 module Splash = {
   @react.component
   let make = () => {
-
-
-  let (apiMessage, setApiMessage) = React.useState(() => "Click the button to fetch players")
-
-  let handleFetch = () =>
-  Api.fetchPlayers()
-  ->Js.Promise.then_(playersJson => {
-    let message = Js.Json.stringifyWithSpace(playersJson, 2)
-    setApiMessage(_ => message)
-    Js.Promise.resolve()
-  }, _)
-  ->ignore
-
-  let (firstName, setFirstName) = React.useState(() => "")
-  let (lastName, setLastName) = React.useState(() => "")
-  let (rating, setRating) = React.useState(() => 1200)
-
-  let handleSubmit = (event: ReactEvent.Form.t) => {
-  ReactEvent.Synthetic.preventDefault(event)
-
-  // Generate a simple unique id for now
-  let uniqueSuffix = NanoId.generate()
-  let id = firstName ++ lastName ++ "_" ++ uniqueSuffix
-
-  let player = Js.Dict.empty()
-  Js.Dict.set(player, "id", Js.Json.string(id))
-  Js.Dict.set(player, "firstName", Js.Json.string(firstName))
-  Js.Dict.set(player, "lastName", Js.Json.string(lastName))
-  Js.Dict.set(player, "rating", Js.Json.number(float_of_int(rating)))
-  Js.Dict.set(player, "matchCount", Js.Json.number(0.0))
-  Js.Dict.set(player, "type_", Js.Json.string("person"))
-
-  let jsonPlayer = Js.Json.object_(player)
-
-  Api.createPlayer(jsonPlayer)
-  ->Js.Promise.then_(response => {
-    setApiMessage(_ => Js.Json.stringifyWithSpace(response, 2))
-    Js.Promise.resolve()
-  }, _)
-  ->ignore
-}
-
-
-
     <div className="pages__container">
       <aside className="pages__hint">
         <ol>
@@ -67,67 +23,11 @@ module Splash = {
             <Icons.ArrowLeft />
             {React.string(" Select a menu item.")}
           </li>
-          <li className="pages__hint-item"> {React.string("Start creating your tournaments!")} </li>
-
           <li className="pages__hint-item">
-            <button className="button-primary" onClick={_ => handleFetch()}>
-              {React.string("Fetch Players from API")}
-            </button>
-            <p> {React.string(apiMessage)} </p>
+            {React.string("Start creating your tournaments!")}
           </li>
-
-          <form onSubmit={handleSubmit}>
-            <label>
-              {"First Name: "->React.string}
-              <input
-                type_="text"
-                value={firstName}
-                onChange={event => {
-                  let value = ReactEvent.Form.target(event)["value"]
-                  setFirstName(_ => value)
-                }}
-              />
-            </label>
-            <br />
-            <label>
-              {"Last Name: "->React.string}
-              <input
-                type_="text"
-                value={lastName}
-                onChange={event => {
-                  let value = ReactEvent.Form.target(event)["value"]
-                  setLastName(_ => value)
-                }}
-              />
-            </label>
-
-            <br />
-            <label>
-              {"Rating: "->React.string}
-              <input
-                type_="number"
-                value={Int.toString(rating)}
-                onChange={event => {
-                  let target = ReactEvent.Form.target(event)
-                  let valueStr = target["value"]
-                  switch Int.fromString(valueStr) {
-                  | Some(value) => setRating(_ => value)
-                  | None => ()
-                  }
-                }}
-              />
-            </label>
-
-
-            <br />
-            <button className="button-primary" type_="submit">
-              {React.string("Add Player")}
-            </button>
-          </form>
-
-
-
         </ol>
+
         <Utils.Notification kind=Warning>
           <div>
             <p>
@@ -143,6 +43,7 @@ module Splash = {
           </div>
         </Utils.Notification>
       </aside>
+
       <div className="pages__title">
         <div className="pages__title-icon">
           <img src=Utils.WebpackAssets.logo alt="" height="96" width="96" />
@@ -151,12 +52,15 @@ module Splash = {
           <h1 className="title" style={ReactDOM.Style.make(~fontSize="40px", ())}>
             {React.string("Coronate")}
           </h1>
-          <p className={"pages__subtitle caption-30"}> {React.string("Tournament manager")} </p>
+          <p className={"pages__subtitle caption-30"}>
+            {React.string("Tournament manager")}
+          </p>
         </div>
       </div>
+
       <footer className={"pages__footer body-20"}>
         <div className="pages__footer-left">
-           <img src=Utils.WebpackAssets.qGlogo alt="" height="96" width="192" />
+          <img src=Utils.WebpackAssets.qGlogo alt="" height="96" width="192" />
         </div>
         <div className="pages__footer-right">
           <p> {React.string(`Copyright ${HtmlEntities.copy} John Jackson.`)} </p>
@@ -205,7 +109,9 @@ module TimeCalculator = {
   let updateInt = (dispatch, minimum, event) => {
     ReactEvent.Form.preventDefault(event)
     let value =
-      ReactEvent.Form.currentTarget(event)["value"]->Int.fromString->Option.getWithDefault(minimum)
+      ReactEvent.Form.currentTarget(event)["value"]
+      ->Int.fromString
+      ->Option.getWithDefault(minimum)
     let safeValue = value < minimum ? minimum : value
     dispatch(_ => safeValue)
   }
@@ -220,6 +126,7 @@ module TimeCalculator = {
     let (players, setPlayers) = React.useState(() => 2)
     let (breakTime, setBreakTime) = React.useState(() => 5)
     let (totalTime, setTotalTime) = React.useState(() => 4.0)
+
     <div className="content-area">
       <h1> {title->React.string} </h1>
       <p className="caption-30">
@@ -230,7 +137,9 @@ module TimeCalculator = {
           <tbody>
             <tr>
               <td>
-                <label htmlFor="playerCount"> {React.string("Player count ")} </label>
+                <label htmlFor="playerCount">
+                  {React.string("Player count ")}
+                </label>
               </td>
               <td>
                 <input
@@ -245,7 +154,9 @@ module TimeCalculator = {
             </tr>
             <tr>
               <td>
-                <label htmlFor="breakTime"> {React.string("Breaks between rounds ")} </label>
+                <label htmlFor="breakTime">
+                  {React.string("Breaks between rounds ")}
+                </label>
               </td>
               <td>
                 <input
@@ -262,7 +173,9 @@ module TimeCalculator = {
             </tr>
             <tr>
               <td>
-                <label htmlFor="totalTime"> {React.string("Total time available ")} </label>
+                <label htmlFor="totalTime">
+                  {React.string("Total time available ")}
+                </label>
               </td>
               <td>
                 <input
@@ -283,6 +196,7 @@ module TimeCalculator = {
       <dl>
         <dt className="title-20"> {React.string("Round count")} </dt>
         <dd> {players->Int.toFloat->log2->ceil->fixNumber->React.float} </dd>
+
         <dt className="title-20"> {React.string("Maximum time control")} </dt>
         <dd>
           <span className="title-20">
